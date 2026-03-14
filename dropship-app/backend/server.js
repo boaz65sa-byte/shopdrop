@@ -4,9 +4,11 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
+// Load global config FIRST (reads data/config.json + process.env)
+require('./config');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Ensure data directory exists
 const dataDir = path.join(__dirname, 'data');
@@ -14,39 +16,40 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// In-memory store for connections
+// In-memory store for OAuth connections
 global.storeConnections = {
   ebay: null,
   shopify: [],
   amazon: null,
   etsy: null,
-  woocommerce: []
+  woocommerce: [],
+  autods: null
 };
+
+const FRONTEND_URL = () => global.appConfig?.general?.frontendUrl || process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Middleware
 app.use(cors({
-  origin: [FRONTEND_URL, 'http://localhost:5173', 'http://localhost:4173'],
+  origin: (origin, callback) => {
+    const allowed = [FRONTEND_URL(), 'http://localhost:5173', 'http://localhost:4173'];
+    if (!origin || allowed.includes(origin)) callback(null, true);
+    else callback(null, false);
+  },
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-const ebayRoutes = require('./routes/ebay');
-const shopifyRoutes = require('./routes/shopify');
-const amazonRoutes = require('./routes/amazon');
-const etsyRoutes = require('./routes/etsy');
-const woocommerceRoutes = require('./routes/woocommerce');
-const productsRoutes = require('./routes/products');
-const ordersRoutes = require('./routes/orders');
-
-app.use('/api/ebay', ebayRoutes);
-app.use('/api/shopify', shopifyRoutes);
-app.use('/api/amazon', amazonRoutes);
-app.use('/api/etsy', etsyRoutes);
-app.use('/api/woocommerce', woocommerceRoutes);
-app.use('/api/products', productsRoutes);
-app.use('/api/orders', ordersRoutes);
+app.use('/api/admin',       require('./routes/admin'));
+app.use('/api/ebay',        require('./routes/ebay'));
+app.use('/api/shopify',     require('./routes/shopify'));
+app.use('/api/amazon',      require('./routes/amazon'));
+app.use('/api/etsy',        require('./routes/etsy'));
+app.use('/api/woocommerce', require('./routes/woocommerce'));
+app.use('/api/autods',      require('./routes/autods'));
+app.use('/api/products',    require('./routes/products'));
+app.use('/api/orders',      require('./routes/orders'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -55,6 +58,6 @@ app.get('/api/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`\n🚀 שרת דרופ שיפינג רץ על פורט ${PORT}`);
-  console.log(`📡 API זמין בכתובת: http://localhost:${PORT}/api`);
-  console.log(`🌐 Frontend: ${FRONTEND_URL}\n`);
+  console.log(`📡 API: http://localhost:${PORT}/api`);
+  console.log(`🔐 Admin: http://localhost:5173 → לשונית אדמין (סיסמה: admin123)\n`);
 });

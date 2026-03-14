@@ -6,6 +6,7 @@ import MyProducts from './components/MyProducts'
 import StoreConnections from './components/StoreConnections'
 import Orders from './components/Orders'
 import Settings from './components/Settings'
+import Admin from './components/Admin'
 
 const API_BASE = '/api'
 
@@ -73,6 +74,7 @@ export default function App() {
       case 'stores': return <StoreConnections {...props} />
       case 'orders': return <Orders {...props} />
       case 'settings': return <Settings {...props} />
+      case 'admin':    return <Admin {...props} />
       default: return <Dashboard {...props} />
     }
   }

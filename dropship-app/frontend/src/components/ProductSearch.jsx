@@ -2,6 +2,102 @@ import React, { useState, useEffect, useCallback } from 'react'
 
 const API_BASE = '/api'
 
+function AutodsProducts({ showToast }) {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [status, setStatus] = useState(null)
+  const [savingIds, setSavingIds] = useState(new Set())
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_BASE}/autods/status`).then(r => r.json()),
+      fetch(`${API_BASE}/autods/products`).then(r => r.json()),
+    ]).then(([s, p]) => {
+      setStatus(s)
+      setProducts(p.products || [])
+    }).finally(() => setLoading(false))
+  }, [])
+
+  const handleDemoConnect = async () => {
+    await fetch(`${API_BASE}/autods/connect-demo`, { method: 'POST' })
+    const s = await fetch(`${API_BASE}/autods/status`).then(r => r.json())
+    setStatus(s)
+  }
+
+  const handleSave = async (product) => {
+    setSavingIds(prev => new Set([...prev, product.id]))
+    try {
+      const res = await fetch(`${API_BASE}/products/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceId: product.id, title: product.title, supplierPrice: product.supplierPrice, currency: product.currency, image: product.image, images: product.images, supplier: product.supplier, rating: product.rating, category: product.category, markupPercent: 50 })
+      })
+      const data = await res.json()
+      if (!res.ok) showToast(data.error || 'שגיאה', 'error')
+      else showToast('המוצר נשמר!', 'success')
+    } finally {
+      setSavingIds(prev => { const s = new Set(prev); s.delete(product.id); return s })
+    }
+  }
+
+  if (loading) return <div className="flex justify-center h-48 items-center"><div className="spinner w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full" /></div>
+
+  if (!status?.connected) return (
+    <div className="card text-center py-12">
+      <div className="text-4xl mb-3">🤖</div>
+      <div className="font-semibold text-gray-800 mb-1">AutoDS לא מחובר</div>
+      <div className="text-sm text-gray-500 mb-4">חבר AutoDS כדי לייבא מוצרים עם ניטור אוטומטי</div>
+      <button onClick={handleDemoConnect} className="btn-primary mx-auto">חבר מצב הדגמה</button>
+    </div>
+  )
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-4 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3">
+        <span className="text-2xl">🤖</span>
+        <div>
+          <span className="font-semibold text-indigo-800">AutoDS מחובר</span>
+          {status.isDemo && <span className="badge bg-warning-100 text-warning-700 mr-2">הדגמה</span>}
+          <div className="text-xs text-indigo-600">{products.length} מוצרים עם ניטור מחיר/מלאי אוטומטי</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {products.map(p => {
+          const usdToIls = 3.75; const cost = (p.supplierPrice + 2) * usdToIls; const sell = cost * 1.5; const profit = sell - cost
+          return (
+            <div key={p.id} className="card p-0 overflow-hidden hover:shadow-md transition-shadow">
+              <div className="relative">
+                <img src={p.image} alt={p.title} className="w-full h-44 object-cover" />
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <span className="badge bg-indigo-600/90 text-white text-xs">AutoDS</span>
+                  <span className="badge bg-white/90 text-indigo-700 text-xs font-bold">⭐{p.profitScore}</span>
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-medium text-gray-900 line-clamp-2 min-h-[2.5rem]">{p.title}</h3>
+                <div className="text-xs text-gray-400 mt-1">{p.supplier}</div>
+                <div className="flex items-center gap-1 mt-1">
+                  <span className="text-warning-500 text-xs">★</span>
+                  <span className="text-xs font-medium">{p.rating}</span>
+                  <span className="text-xs text-gray-400">({p.reviews.toLocaleString()})</span>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-100 text-xs space-y-1">
+                  <div className="flex justify-between text-gray-500"><span>עלות</span><span>${p.supplierPrice}</span></div>
+                  <div className="flex justify-between text-gray-700 font-medium"><span>מחיר מכירה</span><span>₪{sell.toFixed(0)}</span></div>
+                  <div className="flex justify-between text-success-600 font-bold"><span>רווח</span><span>₪{profit.toFixed(0)}</span></div>
+                </div>
+                <button onClick={() => handleSave(p)} disabled={savingIds.has(p.id)} className="btn-primary w-full mt-3 justify-center text-sm py-2">
+                  {savingIds.has(p.id) ? <span className="spinner w-4 h-4 border-2 border-white/40 border-t-white rounded-full" /> : '+ הוסף למוצרים'}
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const CATEGORY_LABELS = {
   all: 'הכל',
   electronics: 'אלקטרוניקה',
@@ -79,6 +175,7 @@ function ProductCard({ product, onSave, saving }) {
 }
 
 export default function ProductSearch({ showToast, setCurrentPage }) {
+  const [activeSource, setActiveSource] = useState('suppliers')
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
@@ -148,6 +245,20 @@ export default function ProductSearch({ showToast, setCurrentPage }) {
         <p className="text-gray-500 text-sm mt-1">מצא מוצרים רווחיים מספקים ברחבי העולם</p>
       </div>
 
+      {/* Source tabs */}
+      <div className="flex gap-3">
+        <button onClick={() => setActiveSource('suppliers')} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${activeSource === 'suppliers' ? 'bg-primary-600 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+          🌐 ספקים כלליים
+        </button>
+        <button onClick={() => setActiveSource('autods')} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${activeSource === 'autods' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+          🤖 AutoDS
+        </button>
+      </div>
+
+      {activeSource === 'autods' && <AutodsProducts showToast={showToast} />}
+      {activeSource !== 'suppliers' ? null : null}
+
+      {activeSource !== 'suppliers' ? <></> : <>
       {/* Search bar */}
       <div className="card p-4">
         <div className="flex gap-3">
@@ -214,6 +325,7 @@ export default function ProductSearch({ showToast, setCurrentPage }) {
           <div className="text-sm mt-1">נסה מונח חיפוש אחר</div>
         </div>
       )}
+      </>}
     </div>
   )
 }

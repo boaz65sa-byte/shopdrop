@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 
 const navItems = [
-  { id: 'dashboard', label: 'לוח בקרה', icon: '◉' },
-  { id: 'search', label: 'חיפוש מוצרים', icon: '⌕' },
-  { id: 'products', label: 'המוצרים שלי', icon: '▦' },
-  { id: 'orders', label: 'הזמנות', icon: '📋' },
-  { id: 'stores', label: 'חיבור חנויות', icon: '🔗' },
-  { id: 'settings', label: 'הגדרות', icon: '⚙' },
+  { id: 'dashboard', label: 'לוח בקרה',     icon: '◉' },
+  { id: 'search',    label: 'חיפוש מוצרים', icon: '⌕' },
+  { id: 'products',  label: 'המוצרים שלי',  icon: '▦' },
+  { id: 'orders',    label: 'הזמנות',        icon: '📋' },
+  { id: 'stores',    label: 'חיבור חנויות', icon: '🔗' },
+  { id: 'settings',  label: 'הגדרות',        icon: '⚙' },
+  { id: 'admin',     label: 'אדמין',         icon: '🔐' },
 ]
 
 export default function Layout({ children, currentPage, setCurrentPage, storeStatus }) {
