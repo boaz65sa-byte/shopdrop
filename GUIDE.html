@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מדריך הפעלה – DropShip IL</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4ff; color: #1e293b; line-height: 1.6; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  h1 { font-size: 2.2rem; font-weight: 800; color: #1e3a8a; margin-bottom: 6px; }
+  .subtitle { color: #64748b; font-size: 1.05rem; margin-bottom: 40px; }
+
+  h2 { font-size: 1.25rem; font-weight: 700; color: #1e40af; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  h3 { font-size: 1rem; font-weight: 700; color: #334155; margin-bottom: 8px; }
+
+  .section { background: white; border-radius: 16px; padding: 28px; margin-bottom: 24px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+
+  .step { display: flex; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9; }
+  .step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .step-num { background: #2563eb; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-top: 2px; }
+  .step-body h3 { margin-bottom: 6px; font-size: 1rem; color: #1e293b; }
+  .step-body p, .step-body li { color: #475569; font-size: 0.92rem; }
+
+  code { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 2px 7px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 0.88rem; color: #1e40af; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-radius: 12px; font-family: 'Consolas', monospace; font-size: 0.88rem; margin: 10px 0; overflow-x: auto; line-height: 1.8; }
+  pre .comment { color: #64748b; }
+  pre .key { color: #93c5fd; }
+  pre .val { color: #86efac; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+  .badge-blue { background: #dbeafe; color: #1d4ed8; }
+  .badge-green { background: #dcfce7; color: #15803d; }
+  .badge-orange { background: #fef3c7; color: #b45309; }
+  .badge-red { background: #fee2e2; color: #b91c1c; }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .store-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+  .store-card .icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .store-card h3 { font-size: 1rem; margin-bottom: 4px; }
+  .store-card p { color: #64748b; font-size: 0.85rem; margin-bottom: 6px; }
+  .store-card .url { font-size: 0.78rem; color: #2563eb; direction: ltr; display: block; margin-top: 6px; }
+
+  .todo-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f1f5f9; }
+  .todo-item:last-child { border-bottom: none; }
+  .todo-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 1px; }
+  .todo-title { font-weight: 600; color: #1e293b; font-size: 0.95rem; }
+  .todo-desc { color: #64748b; font-size: 0.88rem; margin-top: 2px; }
+  .priority { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-right: 8px; }
+  .p-high { background: #fee2e2; color: #b91c1c; }
+  .p-med { background: #fef3c7; color: #b45309; }
+  .p-low { background: #dcfce7; color: #15803d; }
+
+  .tip { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 16px; font-size: 0.88rem; color: #1d4ed8; margin: 12px 0; }
+  .warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 16px; font-size: 0.88rem; color: #92400e; margin: 12px 0; }
+
+  ul { padding-right: 20px; }
+  ul li { margin-bottom: 4px; }
+  ol { padding-right: 20px; }
+  ol li { margin-bottom: 6px; }
+
+  .toc a { color: #2563eb; text-decoration: none; font-size: 0.92rem; display: block; padding: 3px 0; }
+  .toc a:hover { text-decoration: underline; }
+
+  .divider { border: none; border-top: 2px solid #e2e8f0; margin: 30px 0; }
+
+  .stack-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; }
+  .stack-item:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>🚀 DropShip IL – מדריך הפעלה מלא</h1>
+  <p class="subtitle">מדריך שלב-אחר-שלב להפעלת האפליקציה, חיבור חנויות, ומה צריך לעשות כדי להתחיל למכור</p>
+
+  <!-- TOC -->
+  <div class="section">
+    <h2>📑 תוכן עניינים</h2>
+    <div class="toc">
+      <a href="#architecture">1. מבנה הפרויקט</a>
+      <a href="#run">2. הפעלת האפליקציה</a>
+      <a href="#stores">3. חיבור חנויות</a>
+      <a href="#flow">4. תהליך העבודה היומי</a>
+      <a href="#todo">5. מה חסר לך לעשות עכשיו</a>
+      <a href="#production">6. מעבר ל-Production (אתר אמיתי)</a>
+      <a href="#troubleshoot">7. פתרון בעיות נפוצות</a>
+    </div>
+  </div>
+
+  <!-- Architecture -->
+  <div class="section" id="architecture">
+    <h2>🏗 מבנה הפרויקט</h2>
+    <pre>dropship-app/
+  ├── <span class="key">backend/</span>          <span class="comment"># שרת Node.js</span>
+  │   ├── server.js         <span class="comment"># נקודת הכניסה, port 3001</span>
+  │   ├── routes/
+  │   │   ├── ebay.js       <span class="comment"># eBay OAuth + API</span>
+  │   │   ├── shopify.js    <span class="comment"># Shopify OAuth + API</span>
+  │   │   ├── amazon.js     <span class="comment"># Amazon SP-API OAuth</span>
+  │   │   ├── etsy.js       <span class="comment"># Etsy OAuth (PKCE)</span>
+  │   │   ├── woocommerce.js <span class="comment"># WooCommerce REST API</span>
+  │   │   ├── products.js   <span class="comment"># ניהול מוצרים (JSON file)</span>
+  │   │   └── orders.js     <span class="comment"># ניהול הזמנות (in-memory)</span>
+  │   ├── data/             <span class="comment"># products.json נשמר כאן</span>
+  │   └── .env              <span class="comment"># API keys (לא מועלה ל-git!)</span>
+  └── <span class="key">frontend/</span>         <span class="comment"># React + Vite, port 5173</span>
+      └── src/components/
+          ├── Layout        <span class="comment"># סיידבר ניווט</span>
+          ├── Dashboard     <span class="comment"># לוח בקרה</span>
+          ├── ProductSearch <span class="comment"># חיפוש מוצרים מספקים</span>
+          ├── MyProducts    <span class="comment"># ניהול מוצרים שמורים</span>
+          ├── StoreConnections <span class="comment"># חיבור 5 חנויות</span>
+          ├── Orders        <span class="comment"># ניהול הזמנות</span>
+          └── Settings      <span class="comment"># הגדרות מחירים</span></pre>
+
+    <h3 style="margin-top:16px">Stack טכנולוגי</h3>
+    <div>
+      <div class="stack-item"><span>Backend</span><span><code>Node.js</code> + <code>Express</code> + <code>Axios</code></span></div>
+      <div class="stack-item"><span>Frontend</span><span><code>React 18</code> + <code>Vite</code> + <code>Tailwind CSS</code></span></div>
+      <div class="stack-item"><span>שמירת מוצרים</span><span>קובץ JSON מקומי (<code>data/products.json</code>)</span></div>
+      <div class="stack-item"><span>שמירת הזמנות</span><span>in-memory (מתאפס בהפעלה מחדש)</span></div>
+      <div class="stack-item"><span>Authentication</span><span>OAuth 2.0 לכל הפלטפורמות</span></div>
+    </div>
+  </div>
+
+  <!-- Run -->
+  <div class="section" id="run">
+    <h2>▶ הפעלת האפליקציה</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>פתח טרמינל ראשון – Backend</h3>
+        <pre>cd "<span class="val">Desktop/פתיחת חנות דרופ שיפינג/dropship-app/backend</span>"
+npm install
+npm run dev</pre>
+        <p>תראה: <code>🚀 שרת דרופ שיפינג רץ על פורט 3001</code></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>פתח טרמינל שני – Frontend</h3>
+        <pre>cd "<span class="val">Desktop/פתיחת חנות דרופ שיפינג/dropship-app/frontend</span>"
+npm install
+npm run dev</pre>
+        <p>תראה: <code>VITE ready → http://localhost:5173</code></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>פתח בדפדפן</h3>
+        <p>כנס לכתובת: <code>http://localhost:5173</code></p>
+        <div class="tip">💡 ה-Vite dev server מועבר אוטומטית ל-backend (proxy). לכן <code>/api/...</code> עובד ישירות מה-frontend.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>הגדר קובץ .env (אופציונלי לבינתיים)</h3>
+        <p>העתק את <code>.env.example</code> לקובץ <code>.env</code> והוסף API keys אמיתיים לאחר שתרשם לפלטפורמות.</p>
+        <pre>cp .env.example .env</pre>
+        <div class="warn">⚠️ ללא API keys אמיתיים, השתמש ב"מצב הדגמה" – הכל עובד אבל לא מתחבר לחנויות אמיתיות.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stores -->
+  <div class="section" id="stores">
+    <h2>🔗 חיבור חנויות – מדריך לכל פלטפורמה</h2>
+
+    <div class="grid2">
+      <div class="store-card">
+        <div class="icon">🛒</div>
+        <h3>eBay</h3>
+        <p>פלטפורמת המכירות הגדולה בישראל ובעולם</p>
+        <span class="badge badge-orange">OAuth 2.0</span>
+        <ol style="margin-top:10px">
+          <li>הרשם ב-<strong>developer.ebay.com</strong></li>
+          <li>צור Application → Get Keys</li>
+          <li>הוסף Redirect URI: <code style="font-size:0.75rem">http://localhost:3001/api/ebay/callback</code></li>
+          <li>הוסף ל-.env: <code>EBAY_CLIENT_ID</code>, <code>EBAY_CLIENT_SECRET</code></li>
+        </ol>
+        <a class="url" href="#">developer.ebay.com</a>
+      </div>
+
+      <div class="store-card">
+        <div class="icon">🏪</div>
+        <h3>Shopify</h3>
+        <p>פלטפורמת חנות אונליין מקצועית</p>
+        <span class="badge badge-green">OAuth 2.0</span>
+        <ol style="margin-top:10px">
+          <li>הרשם ב-<strong>partners.shopify.com</strong></li>
+          <li>Apps → Create app → Public app</li>
+          <li>הגדר Redirect URI לפי ה-.env</li>
+          <li>הוסף Scopes: read/write products & orders</li>
+        </ol>
+        <a class="url" href="#">partners.shopify.com</a>
+      </div>
+
+      <div class="store-card">
+        <div class="icon">📦</div>
+        <h3>Amazon</h3>
+        <p>הפלטפורמה הגדולה בעולם – קהל ענק</p>
+        <span class="badge badge-orange">SP-API OAuth</span>
+        <ol style="margin-top:10px">
+          <li>חשבון Seller Central פעיל</li>
+          <li>Apps & Services → Develop Apps</li>
+          <li>Register as Developer</li>
+          <li>צור LWA Application → קבל Client ID/Secret</li>
+        </ol>
+        <a class="url" href="#">sellercentral.amazon.com/apps/manage</a>
+      </div>
+
+      <div class="store-card">
+        <div class="icon">🎨</div>
+        <h3>Etsy</h3>
+        <p>מוצרים ייחודיים, קהל קנייה ממוקד</p>
+        <span class="badge badge-purple">OAuth 2.0 + PKCE</span>
+        <ol style="margin-top:10px">
+          <li>הרשם ב-<strong>etsy.com/developers</strong></li>
+          <li>Create a New App</li>
+          <li>הגדר Callback URL</li>
+          <li>הוסף ל-.env: <code>ETSY_CLIENT_ID</code> (ה-Keystring)</li>
+        </ol>
+        <a class="url" href="#">etsy.com/developers/register</a>
+      </div>
+
+      <div class="store-card">
+        <div class="icon">🔌</div>
+        <h3>WooCommerce</h3>
+        <p>חנות WordPress – שליטה מלאה</p>
+        <span class="badge badge-blue">Consumer Key/Secret</span>
+        <ol style="margin-top:10px">
+          <li>לוח ניהול WordPress שלך</li>
+          <li>WooCommerce → הגדרות → מתקדם → REST API</li>
+          <li>לחץ "הוסף מפתח" → בחר Read/Write</li>
+          <li>הדבק את המפתחות ישירות בממשק</li>
+        </ol>
+        <span class="badge badge-green" style="margin-top:8px;display:inline-block">אין צורך ב-.env</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flow -->
+  <div class="section" id="flow">
+    <h2>🔄 תהליך העבודה היומי</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>חיפוש מוצרים <span class="badge badge-blue">לשונית "חיפוש מוצרים"</span></h3>
+        <p>חפש מוצרים מספקים (כמו AliExpress). לכל מוצר תראה:</p>
+        <ul>
+          <li>מחיר עלות מהספק (USD)</li>
+          <li>מחיר מכירה מוצע + רווח משוער (ILS)</li>
+          <li>דירוג, ביקורות, ומספר הזמנות</li>
+        </ul>
+        <p style="margin-top:6px">לחץ <strong>"+ הוסף למוצרים שלי"</strong> לשמירה.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>עריכה ופרסום <span class="badge badge-blue">לשונית "המוצרים שלי"</span></h3>
+        <ul>
+          <li><strong>ערוך</strong> – שנה שם, תיאור, ואחוז רווח</li>
+          <li><strong>פרסם</strong> – בחר חנויות לפרסום (eBay, Shopify, Amazon, Etsy, WooCommerce)</li>
+          <li>המוצר יפורסם בכל החנויות שבחרת</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>ניהול הזמנות <span class="badge badge-blue">לשונית "הזמנות"</span></h3>
+        <ul>
+          <li>הזמנה חדשה מגיעה → סטטוס <span class="badge badge-orange">ממתין</span></li>
+          <li>הזמן מהספק → לחץ <strong>"הכנס לטיפול"</strong> → <span class="badge badge-blue">בטיפול</span></li>
+          <li>אחרי שהספק שלח → לחץ <strong>"סמן כנשלח"</strong> + הכנס מספר מעקב</li>
+          <li>חבילה הגיעה → <span class="badge badge-green">הושלם</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- TODO -->
+  <div class="section" id="todo">
+    <h2>✅ מה חסר לך לעשות עכשיו</h2>
+    <p style="color:#64748b; margin-bottom:16px; font-size:0.92rem">רשימת משימות לפי סדר עדיפות – מה שחובה לפני שמתחילים למכור:</p>
+
+    <div class="todo-item">
+      <div class="todo-icon">🔴</div>
+      <div>
+        <div class="todo-title"><span class="priority p-high">חובה</span> הרשמה לפחות לפלטפורמה אחת</div>
+        <div class="todo-desc">
+          בחר את הפלטפורמה שהכי מתאימה לך ורשום מוכר:<br>
+          <strong>eBay ישראל</strong> – הכי פשוט להתחיל, קהל ישראלי גדול | <strong>Etsy</strong> – אם המוצרים שלך ייחודיים | <strong>Shopify</strong> – אם רוצה חנות עצמאית עם מיתוג
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🔴</div>
+      <div>
+        <div class="todo-title"><span class="priority p-high">חובה</span> מציאת ספק אמיתי</div>
+        <div class="todo-desc">
+          האפליקציה כרגע משתמשת במוצרים לדוגמה. עליך לפתוח חשבון אמיתי ב:<br>
+          <strong>AliExpress Dropshipping Center</strong> – חינמי, קל להתחיל |
+          <strong>CJ Dropshipping</strong> – משלוח מהיר יותר |
+          <strong>Zendrop / Spocket</strong> – ספקים איכותיים לשוק המערבי
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🔴</div>
+      <div>
+        <div class="todo-title"><span class="priority p-high">חובה</span> הגדרת API keys אמיתיים</div>
+        <div class="todo-desc">
+          עדכן את קובץ <code>.env</code> עם מפתחות אמיתיים מהפלטפורמות שבחרת (ראה מדריך בלשונית "חיבור חנויות" באפליקציה).
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🟠</div>
+      <div>
+        <div class="todo-title"><span class="priority p-med">חשוב</span> חיבור API ספק אמיתי</div>
+        <div class="todo-desc">
+          כרגע המוצרים בחיפוש הם mock data. צריך לחבר ל-API של AliExpress / CJ Dropshipping / Zendrop.
+          <br>AliExpress: <code>open.aliexpress.com</code> → AliExpress Dropshipping API
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🟠</div>
+      <div>
+        <div class="todo-title"><span class="priority p-med">חשוב</span> מסד נתונים אמיתי</div>
+        <div class="todo-desc">
+          כרגע המוצרים נשמרים בקובץ JSON וההזמנות ב-memory. בסביבת production צריך:<br>
+          <strong>MongoDB Atlas</strong> (חינמי) או <strong>PostgreSQL + Supabase</strong> (חינמי) לשמירת הכל
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🟠</div>
+      <div>
+        <div class="todo-title"><span class="priority p-med">חשוב</span> Authentication – כניסת משתמשים</div>
+        <div class="todo-desc">
+          כרגע אין הגנת סיסמה. אם האפליקציה תהיה public צריך להוסיף login.
+          <br>פתרון מהיר: <strong>NextAuth.js</strong> או <strong>Supabase Auth</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🟠</div>
+      <div>
+        <div class="todo-title"><span class="priority p-med">חשוב</span> Webhooks להזמנות אמיתיות</div>
+        <div class="todo-desc">
+          כרגע ההזמנות הן mock data. להזמנות אמיתיות מ-Shopify/eBay צריך להגדיר Webhooks שיקלטו הזמנות חדשות אוטומטית.
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🟡</div>
+      <div>
+        <div class="todo-title"><span class="priority p-low">מומלץ</span> הגדרת מחירים ריאלית</div>
+        <div class="todo-desc">
+          כנס להגדרות → שנה שקלול $→₪ לשקל הנוכחי, הגדר אחוז רווח ריאלי (עדיף 60-100% לדרופ שיפינג).
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🟡</div>
+      <div>
+        <div class="todo-title"><span class="priority p-low">מומלץ</span> שם עסקי + לוגו + תיאורי מוצרים</div>
+        <div class="todo-desc">
+          לפני שמפרסמים מוצרים: כתוב תיאורים ייחודיים (לא להעתיק מהספק), צלם/ערוך תמונות, וצור מיתוג עקבי.
+        </div>
+      </div>
+    </div>
+
+    <div class="todo-item">
+      <div class="todo-icon">🟡</div>
+      <div>
+        <div class="todo-title"><span class="priority p-low">מומלץ</span> ביטוח ומסגרת משפטית</div>
+        <div class="todo-desc">
+          פתח עוסק פטור/מורשה, הגדר מדיניות החזרות ברורה, בדוק חבות מכס על יבוא לישראל מעל $75.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Production -->
+  <div class="section" id="production">
+    <h2>🌐 מעבר ל-Production</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Build</h3>
+        <pre>cd frontend && npm run build   <span class="comment"># מייצר תיקיית dist/</span>
+cd backend  && npm start        <span class="comment"># מריץ production</span></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Hosting מומלץ</h3>
+        <div class="grid2" style="margin-top:8px">
+          <div>
+            <strong>Backend</strong><br>
+            <span style="font-size:0.88rem;color:#475569">Railway / Render / Fly.io – חינמי לגרסת hobby</span>
+          </div>
+          <div>
+            <strong>Frontend</strong><br>
+            <span style="font-size:0.88rem;color:#475569">Vercel / Netlify – חינמי, מאוד פשוט לדפלוי</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>עדכן .env לפרודקשן</h3>
+        <pre><span class="key">FRONTEND_URL</span>=<span class="val">https://your-app.vercel.app</span>
+<span class="key">EBAY_REDIRECT_URI</span>=<span class="val">https://your-backend.railway.app/api/ebay/callback</span>
+<span class="comment"># כנ"ל לכל שאר ה-redirect URIs</span></pre>
+        <div class="warn">⚠️ שנה את כל ה-Redirect URIs גם בלוחות הניהול של כל פלטפורמה!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Troubleshoot -->
+  <div class="section" id="troubleshoot">
+    <h2>🔧 פתרון בעיות נפוצות</h2>
+
+    <div class="step">
+      <div class="step-num">?</div>
+      <div class="step-body">
+        <h3>הדף מוצג ריק / שגיאת 404</h3>
+        <p>ודא ששני השרתים רצים: backend על פורט <code>3001</code> ו-frontend על <code>5173</code>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">?</div>
+      <div class="step-body">
+        <h3>שגיאת CORS</h3>
+        <p>ודא שב-<code>.env</code> הערך <code>FRONTEND_URL=http://localhost:5173</code> תואם לכתובת ה-frontend.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">?</div>
+      <div class="step-body">
+        <h3>OAuth לא מחזיר / redirect לא עובד</h3>
+        <p>הבעיה נפוצה: ה-Redirect URI שרשמת בלוח הפלטפורמה חייב להיות <strong>זהה לחלוטין</strong> למה שב-.env. גם slash בסוף משנה!</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">?</div>
+      <div class="step-body">
+        <h3>המוצרים לא נשמרים בין הפעלות</h3>
+        <p>המוצרים נשמרים בקובץ <code>backend/data/products.json</code>. ההזמנות (in-memory) <strong>לא נשמרות</strong> – זה מתוכנן כך בגרסה הנוכחית.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">?</div>
+      <div class="step-body">
+        <h3>WooCommerce – "לא ניתן להתחבר"</h3>
+        <p>בדוק: (1) ה-URL מתחיל בـ<code>https://</code> (2) ה-Consumer Key מתחיל בـ<code>ck_</code> (3) פלאגין WooCommerce מעודכן (4) REST API מופעל בהגדרות WooCommerce</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <hr class="divider">
+  <p style="text-align:center; color:#94a3b8; font-size:0.85rem">
+    DropShip IL · גרסה 1.0.0 · נבנה עם Node.js + React + Tailwind CSS
+  </p>
+
+</div>
+</body>
+</html>
