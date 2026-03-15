@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const navItems = [
+const sellerNavItems = [
   { id: 'dashboard', label: 'לוח בקרה',     icon: '◉' },
   { id: 'search',    label: 'חיפוש מוצרים', icon: '⌕' },
   { id: 'products',  label: 'המוצרים שלי',  icon: '▦' },
@@ -10,10 +10,17 @@ const navItems = [
   { id: 'admin',     label: 'אדמין',         icon: '🔐' },
 ]
 
-export default function Layout({ children, currentPage, setCurrentPage, storeStatus }) {
+const superadminNavItems = [
+  { id: 'dashboard',  label: 'לוח בקרה',    icon: '◉' },
+  { id: 'superadmin', label: 'ניהול מוכרים', icon: '👑' },
+  { id: 'admin',      label: 'הגדרות מערכת', icon: '🔐' },
+]
+
+export default function Layout({ children, currentPage, setCurrentPage, storeStatus, currentUser, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
-  const connectedCount = (storeStatus?.ebay?.connected ? 1 : 0) + (storeStatus?.shopify?.connected ? 1 : 0)
+  const isSuperAdmin = currentUser?.role === 'superadmin'
+  const navItems = isSuperAdmin ? superadminNavItems : sellerNavItems
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -24,7 +31,7 @@ export default function Layout({ children, currentPage, setCurrentPage, storeSta
           {sidebarOpen && (
             <div>
               <h1 className="text-lg font-bold text-primary-700">DropShip IL</h1>
-              <p className="text-xs text-gray-400">מערכת ניהול דרופ שיפינג</p>
+              <p className="text-xs text-gray-400">{isSuperAdmin ? 'פאנל ניהול' : 'מערכת ניהול דרופ שיפינג'}</p>
             </div>
           )}
           <button
@@ -53,8 +60,8 @@ export default function Layout({ children, currentPage, setCurrentPage, storeSta
           ))}
         </nav>
 
-        {/* Store Status */}
-        {sidebarOpen && (
+        {/* Store Status (sellers only) */}
+        {sidebarOpen && !isSuperAdmin && (
           <div className="p-4 border-t border-gray-100">
             <div className="text-xs font-medium text-gray-500 mb-2">חנויות מחוברות</div>
             <div className="flex items-center gap-2 mb-1">
@@ -65,6 +72,31 @@ export default function Layout({ children, currentPage, setCurrentPage, storeSta
               <span className={`w-2 h-2 rounded-full ${storeStatus?.shopify?.connected ? 'bg-success-500' : 'bg-gray-300'}`} />
               <span className="text-xs text-gray-600">Shopify ({storeStatus?.shopify?.stores?.length || 0})</span>
             </div>
+          </div>
+        )}
+
+        {/* User info + logout */}
+        {sidebarOpen && (
+          <div className="p-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm shrink-0">
+                {currentUser?.name?.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-semibold text-gray-800 truncate">{currentUser?.name}</div>
+                <div className="text-xs text-gray-400 truncate" dir="ltr">{currentUser?.email}</div>
+              </div>
+            </div>
+            <button onClick={onLogout} className="w-full text-xs text-danger-600 hover:text-danger-700 font-medium py-1 rounded-lg hover:bg-danger-50 transition-colors">
+              🚪 יציאה
+            </button>
+          </div>
+        )}
+        {!sidebarOpen && (
+          <div className="p-2 border-t border-gray-100">
+            <button onClick={onLogout} className="w-full flex justify-center py-2 text-danger-500 hover:bg-danger-50 rounded-lg transition-colors" title="יציאה">
+              🚪
+            </button>
           </div>
         )}
       </aside>

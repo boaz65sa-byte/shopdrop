@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-
-const API_BASE = '/api'
+import { apiJson } from '../api'
 
 const STATUS_LABELS = {
   draft: { label: 'טיוטה', class: 'bg-gray-100 text-gray-600' },
@@ -20,13 +19,11 @@ function EditModal({ product, onClose, onSave }) {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`${API_BASE}/products/${product.id}`, {
+      const { ok, data } = await apiJson(`/products/${product.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, markupPercent: parseFloat(markup) })
+        body: { title, description, markupPercent: parseFloat(markup) }
       })
-      const data = await res.json()
-      if (res.ok) onSave(data.product)
+      if (ok) onSave(data.product)
     } finally {
       setSaving(false)
     }
@@ -83,13 +80,11 @@ function PublishModal({ product, storeStatus, onClose, onPublish }) {
     if (!selectedStores.length) return
     setPublishing(true)
     try {
-      const res = await fetch(`${API_BASE}/products/${product.id}/publish`, {
+      const { ok, data } = await apiJson(`/products/${product.id}/publish`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stores: selectedStores })
+        body: { stores: selectedStores }
       })
-      const data = await res.json()
-      if (res.ok) onPublish(data.product)
+      if (ok) onPublish(data.product)
     } finally {
       setPublishing(false)
     }
@@ -152,9 +147,8 @@ export default function MyProducts({ showToast, storeStatus, setCurrentPage }) {
 
   const loadProducts = async () => {
     try {
-      const res = await fetch(`${API_BASE}/products/saved`)
-      const data = await res.json()
-      setProducts(data.products || [])
+      const { ok, data } = await apiJson('/products/saved')
+      if (ok) setProducts(data.products || [])
     } catch {
       showToast('שגיאה בטעינת מוצרים', 'error')
     } finally {
@@ -167,8 +161,8 @@ export default function MyProducts({ showToast, storeStatus, setCurrentPage }) {
   const handleDelete = async (id) => {
     if (!confirm('האם למחוק מוצר זה?')) return
     try {
-      const res = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' })
-      if (res.ok) {
+      const { ok } = await apiJson(`/products/${id}`, { method: 'DELETE' })
+      if (ok) {
         setProducts(prev => prev.filter(p => p.id !== id))
         showToast('המוצר נמחק', 'success')
       }

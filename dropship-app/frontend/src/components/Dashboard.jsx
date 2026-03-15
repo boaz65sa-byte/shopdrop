@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-
-const API_BASE = '/api'
+import { apiJson } from '../api'
 
 function StatCard({ label, value, sub, color = 'primary' }) {
   const colors = {
@@ -27,11 +26,13 @@ export default function Dashboard({ setCurrentPage, storeStatus }) {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API_BASE}/orders`).then(r => r.json()),
-      fetch(`${API_BASE}/products/saved`).then(r => r.json()),
-    ]).then(([ordersData, productsData]) => {
+      apiJson('/orders'),
+      apiJson('/products/saved'),
+    ]).then(([ordersRes, productsRes]) => {
+      const ordersData = ordersRes.data
+      const productsData = productsRes.data
       setStats({
-        ...ordersData.stats,
+        ...(ordersData.stats || {}),
         savedProducts: productsData.total || 0,
       })
       setRecentOrders(ordersData.orders?.slice(0, 5) || [])

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { requireApproved } = require('../middleware/auth');
 
 // Mock orders data
 const mockOrders = [
@@ -149,7 +150,7 @@ const mockOrders = [
 let orders = [...mockOrders];
 
 // GET /api/orders
-router.get('/', (req, res) => {
+router.get('/', requireApproved, (req, res) => {
   const { status, source, page = 1, limit = 20 } = req.query;
 
   let filtered = [...orders];
@@ -193,14 +194,14 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/orders/:id
-router.get('/:id', (req, res) => {
+router.get('/:id', requireApproved, (req, res) => {
   const order = orders.find(o => o.id === req.params.id);
   if (!order) return res.status(404).json({ error: 'הזמנה לא נמצאה' });
   res.json({ order });
 });
 
 // PUT /api/orders/:id/status
-router.put('/:id/status', (req, res) => {
+router.put('/:id/status', requireApproved, (req, res) => {
   const { status, notes } = req.body;
   const idx = orders.findIndex(o => o.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'הזמנה לא נמצאה' });
@@ -221,7 +222,7 @@ router.put('/:id/status', (req, res) => {
 });
 
 // POST /api/orders/:id/fulfill
-router.post('/:id/fulfill', (req, res) => {
+router.post('/:id/fulfill', requireApproved, (req, res) => {
   const { trackingNumber, carrier } = req.body;
   const idx = orders.findIndex(o => o.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'הזמנה לא נמצאה' });

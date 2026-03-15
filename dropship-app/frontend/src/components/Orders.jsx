@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-
-const API_BASE = '/api'
+import { apiJson } from '../api'
 
 const STATUS_CONFIG = {
   pending:    { label: 'ממתין',   class: 'bg-warning-100 text-warning-700',  dot: 'bg-warning-500' },
@@ -19,13 +18,11 @@ function FulfillModal({ order, onClose, onFulfill }) {
     if (!tracking.trim()) return
     setSaving(true)
     try {
-      const res = await fetch(`${API_BASE}/orders/${order.id}/fulfill`, {
+      const { ok, data } = await apiJson(`/orders/${order.id}/fulfill`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackingNumber: tracking, carrier })
+        body: { trackingNumber: tracking, carrier }
       })
-      const data = await res.json()
-      if (res.ok) onFulfill(data.order)
+      if (ok) onFulfill(data.order)
     } finally {
       setSaving(false)
     }
@@ -78,10 +75,8 @@ export default function Orders({ showToast }) {
     try {
       const params = new URLSearchParams()
       if (statusFilter !== 'all') params.set('status', statusFilter)
-      const res = await fetch(`${API_BASE}/orders?${params}`)
-      const data = await res.json()
-      setOrders(data.orders || [])
-      setStats(data.stats || null)
+      const { ok, data } = await apiJson(`/orders?${params}`)
+      if (ok) { setOrders(data.orders || []); setStats(data.stats || null) }
     } catch {
       showToast('שגיאה בטעינת הזמנות', 'error')
     } finally {
@@ -94,13 +89,11 @@ export default function Orders({ showToast }) {
   const updateStatus = async (orderId, newStatus) => {
     setUpdatingId(orderId)
     try {
-      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+      const { ok, data } = await apiJson(`/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: { status: newStatus }
       })
-      const data = await res.json()
-      if (res.ok) {
+      if (ok) {
         setOrders(prev => prev.map(o => o.id === orderId ? data.order : o))
         showToast('סטטוס עודכן', 'success')
       }

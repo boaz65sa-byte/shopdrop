@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-
-const API_BASE = '/api'
+import { apiJson, api } from '../api'
 
 function AutodsProducts({ showToast }) {
   const [products, setProducts] = useState([])
@@ -10,30 +9,28 @@ function AutodsProducts({ showToast }) {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API_BASE}/autods/status`).then(r => r.json()),
-      fetch(`${API_BASE}/autods/products`).then(r => r.json()),
+      apiJson('/autods/status'),
+      apiJson('/autods/products'),
     ]).then(([s, p]) => {
-      setStatus(s)
-      setProducts(p.products || [])
+      setStatus(s.data)
+      setProducts(p.data.products || [])
     }).finally(() => setLoading(false))
   }, [])
 
   const handleDemoConnect = async () => {
-    await fetch(`${API_BASE}/autods/connect-demo`, { method: 'POST' })
-    const s = await fetch(`${API_BASE}/autods/status`).then(r => r.json())
-    setStatus(s)
+    await apiJson('/autods/connect-demo', { method: 'POST' })
+    const { data } = await apiJson('/autods/status')
+    setStatus(data)
   }
 
   const handleSave = async (product) => {
     setSavingIds(prev => new Set([...prev, product.id]))
     try {
-      const res = await fetch(`${API_BASE}/products/save`, {
+      const { ok, data } = await apiJson('/products/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sourceId: product.id, title: product.title, supplierPrice: product.supplierPrice, currency: product.currency, image: product.image, images: product.images, supplier: product.supplier, rating: product.rating, category: product.category, markupPercent: 50 })
+        body: { sourceId: product.id, title: product.title, supplierPrice: product.supplierPrice, currency: product.currency, image: product.image, images: product.images, supplier: product.supplier, rating: product.rating, category: product.category, markupPercent: 50 }
       })
-      const data = await res.json()
-      if (!res.ok) showToast(data.error || 'שגיאה', 'error')
+      if (!ok) showToast(data.error || 'שגיאה', 'error')
       else showToast('המוצר נשמר!', 'success')
     } finally {
       setSavingIds(prev => { const s = new Set(prev); s.delete(product.id); return s })
@@ -188,9 +185,8 @@ export default function ProductSearch({ showToast, setCurrentPage }) {
       const params = new URLSearchParams()
       if (query) params.set('q', query)
       if (category !== 'all') params.set('category', category)
-      const res = await fetch(`${API_BASE}/products/search?${params}`)
-      const data = await res.json()
-      setProducts(data.products || [])
+      const { ok, data } = await apiJson(`/products/search?${params}`)
+      if (ok) setProducts(data.products || [])
     } catch {
       showToast('שגיאה בטעינת מוצרים', 'error')
     } finally {
@@ -209,28 +205,12 @@ export default function ProductSearch({ showToast, setCurrentPage }) {
   const handleSave = async (product) => {
     setSavingIds(prev => new Set([...prev, product.id]))
     try {
-      const res = await fetch(`${API_BASE}/products/save`, {
+      const { ok, data } = await apiJson('/products/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceId: product.id,
-          title: product.title,
-          supplierPrice: product.supplierPrice,
-          currency: product.currency,
-          image: product.image,
-          images: product.images,
-          supplier: product.supplier,
-          rating: product.rating,
-          category: product.category,
-          markupPercent: 50,
-        })
+        body: { sourceId: product.id, title: product.title, supplierPrice: product.supplierPrice, currency: product.currency, image: product.image, images: product.images, supplier: product.supplier, rating: product.rating, category: product.category, markupPercent: 50 }
       })
-      const data = await res.json()
-      if (!res.ok) {
-        showToast(data.error || 'שגיאה בשמירה', 'error')
-      } else {
-        showToast('המוצר נשמר בהצלחה!', 'success')
-      }
+      if (!ok) showToast(data.error || 'שגיאה בשמירה', 'error')
+      else showToast('המוצר נשמר בהצלחה!', 'success')
     } catch {
       showToast('שגיאה בשמירת המוצר', 'error')
     } finally {
