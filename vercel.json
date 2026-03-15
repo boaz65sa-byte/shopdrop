@@ -3,6 +3,6 @@
   "outputDirectory": "dropship-app/frontend/dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "env": {
-    "VITE_API_URL": "RAILWAY_URL_PLACEHOLDER"
+    "VITE_API_URL": "https://shopdrop-production-2fb1.up.railway.app"
   }
 }
