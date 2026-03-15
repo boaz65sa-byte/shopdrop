@@ -1,4 +1,6 @@
-const BASE = '/api'
+// In production (Vercel), VITE_API_URL points to Railway backend
+// In development, empty → proxied by Vite to localhost:3001
+const BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
 
 function getToken() {
   return localStorage.getItem('dropship_token')

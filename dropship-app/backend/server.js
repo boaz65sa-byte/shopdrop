@@ -31,8 +31,15 @@ const FRONTEND_URL = () => global.appConfig?.general?.frontendUrl || process.env
 
 app.use(cors({
   origin: (origin, callback) => {
-    const allowed = [FRONTEND_URL(), 'http://localhost:5173', 'http://localhost:4173'];
-    if (!origin || allowed.includes(origin)) callback(null, true);
+    if (!origin) return callback(null, true); // same-origin / curl
+    const allowed = [
+      FRONTEND_URL(),
+      'http://localhost:5173',
+      'http://localhost:4173',
+    ];
+    // Allow any Vercel preview/production URL for this project
+    const isVercel = /https:\/\/shopdrop[^.]*\.vercel\.app$/.test(origin);
+    if (allowed.includes(origin) || isVercel) callback(null, true);
     else callback(null, false);
   },
   credentials: true

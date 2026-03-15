@@ -1,5 +1,8 @@
 {
   "buildCommand": "cd dropship-app/frontend && npm install && npm run build",
   "outputDirectory": "dropship-app/frontend/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "env": {
+    "VITE_API_URL": "RAILWAY_URL_PLACEHOLDER"
+  }
 }

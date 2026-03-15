@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONFIG_FILE = path.join(__dirname, 'data/config.json');
+const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
+const CONFIG_FILE = path.join(dataDir, 'config.json');
 
 const DEFAULTS = {
   adminPassword: 'admin123',
