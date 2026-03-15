@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { v4: uuidv4 } = require('uuid');
-const { requireApproved, requireAuth } = require('../middleware/auth');
-const db = require('../db');
+const { requireApproved } = require('../middleware/auth');
+const pool = require('../db');
 
 // Mock supplier products (AliExpress-like)
 const mockSearchProducts = [
@@ -56,7 +55,7 @@ function rowToProduct(row) {
   };
 }
 
-// GET /api/products/search  (public – no auth needed for browsing)
+// GET /api/products/search
 router.get('/search', (req, res) => {
   const { q, category, minPrice, maxPrice, minRating } = req.query;
   let results = [...mockSearchProducts];
@@ -71,103 +70,134 @@ router.get('/search', (req, res) => {
   res.json({ products: results, total: results.length, categories: ['electronics', 'home', 'bags', 'accessories', 'tools', 'sports', 'health', 'kitchen', 'jewelry', 'clothing'] });
 });
 
-// GET /api/products/saved  – user's own saved products
-router.get('/saved', requireApproved, (req, res) => {
-  const rows = db.prepare('SELECT * FROM user_products WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id);
-  const products = rows.map(rowToProduct);
-  res.json({ products, total: products.length });
+// GET /api/products/saved
+router.get('/saved', requireApproved, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM user_products WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
+    const products = rows.map(rowToProduct);
+    res.json({ products, total: products.length });
+  } catch (err) {
+    console.error('get saved error:', err.message);
+    res.status(500).json({ error: 'שגיאת שרת' });
+  }
 });
 
 // POST /api/products/save
-router.post('/save', requireApproved, (req, res) => {
-  const { sourceId, title, supplierPrice, currency, image, images, supplier, rating, category, markupPercent, description } = req.body;
+router.post('/save', requireApproved, async (req, res) => {
+  try {
+    const { sourceId, title, supplierPrice, currency, image, images, supplier, rating, category, markupPercent, description } = req.body;
 
-  const existing = db.prepare('SELECT id FROM user_products WHERE user_id = ? AND source_id = ?').get(req.user.id, sourceId);
-  if (existing) return res.status(409).json({ error: 'מוצר זה כבר נשמר' });
+    const { rows: existing } = await pool.query('SELECT id FROM user_products WHERE user_id = $1 AND source_id = $2', [req.user.id, sourceId]);
+    if (existing.length > 0) return res.status(409).json({ error: 'מוצר זה כבר נשמר' });
 
-  const markup = parseFloat(markupPercent) || 50;
-  const usdToIls = 3.75;
-  const costIls = (parseFloat(supplierPrice) + 2) * usdToIls;
-  const sellingPrice = parseFloat((costIls * (1 + markup / 100)).toFixed(2));
+    const markup = parseFloat(markupPercent) || 50;
+    const usdToIls = 3.75;
+    const costIls = (parseFloat(supplierPrice) + 2) * usdToIls;
+    const sellingPrice = parseFloat((costIls * (1 + markup / 100)).toFixed(2));
 
-  const result = db.prepare(`
-    INSERT INTO user_products (user_id, source_id, title, supplier_price, cost_price, selling_price, markup_percent, currency, image, images, supplier, rating, category, description, status, published_stores)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', '[]')
-  `).run(
-    req.user.id, sourceId, title, parseFloat(supplierPrice),
-    parseFloat(costIls.toFixed(2)), sellingPrice, markup,
-    currency || 'USD', image, JSON.stringify(images || [image]),
-    supplier, rating, category,
-    description || `${title} - מוצר איכותי מהספק ${supplier}`
-  );
-
-  const product = rowToProduct(db.prepare('SELECT * FROM user_products WHERE id = ?').get(result.lastInsertRowid));
-  res.status(201).json({ product, message: 'המוצר נשמר בהצלחה' });
+    const { rows } = await pool.query(
+      `INSERT INTO user_products (user_id, source_id, title, supplier_price, cost_price, selling_price, markup_percent, currency, image, images, supplier, rating, category, description, status, published_stores)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'draft', '[]') RETURNING *`,
+      [
+        req.user.id, sourceId, title, parseFloat(supplierPrice),
+        parseFloat(costIls.toFixed(2)), sellingPrice, markup,
+        currency || 'USD', image, JSON.stringify(images || [image]),
+        supplier, rating, category,
+        description || `${title} - מוצר איכותי מהספק ${supplier}`
+      ]
+    );
+    res.status(201).json({ product: rowToProduct(rows[0]), message: 'המוצר נשמר בהצלחה' });
+  } catch (err) {
+    console.error('save product error:', err.message);
+    res.status(500).json({ error: 'שגיאת שרת' });
+  }
 });
 
 // GET /api/products/:id
-router.get('/:id', requireApproved, (req, res) => {
-  const row = db.prepare('SELECT * FROM user_products WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-  if (!row) return res.status(404).json({ error: 'מוצר לא נמצא' });
-  res.json({ product: rowToProduct(row) });
+router.get('/:id', requireApproved, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM user_products WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'מוצר לא נמצא' });
+    res.json({ product: rowToProduct(rows[0]) });
+  } catch (err) {
+    console.error('get product error:', err.message);
+    res.status(500).json({ error: 'שגיאת שרת' });
+  }
 });
 
 // PUT /api/products/:id
-router.put('/:id', requireApproved, (req, res) => {
-  const row = db.prepare('SELECT * FROM user_products WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-  if (!row) return res.status(404).json({ error: 'מוצר לא נמצא' });
+router.put('/:id', requireApproved, async (req, res) => {
+  try {
+    const { rows: existing } = await pool.query('SELECT * FROM user_products WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+    if (existing.length === 0) return res.status(404).json({ error: 'מוצר לא נמצא' });
+    const row = existing[0];
 
-  const updates = req.body;
-  let sellingPrice = row.selling_price;
-  if (updates.markupPercent !== undefined) {
-    sellingPrice = parseFloat((row.cost_price * (1 + parseFloat(updates.markupPercent) / 100)).toFixed(2));
+    const updates = req.body;
+    let sellingPrice = row.selling_price;
+    if (updates.markupPercent !== undefined) {
+      sellingPrice = parseFloat((row.cost_price * (1 + parseFloat(updates.markupPercent) / 100)).toFixed(2));
+    }
+
+    const { rows } = await pool.query(
+      `UPDATE user_products SET
+        title = $1, markup_percent = $2, selling_price = $3, status = $4, description = $5, updated_at = NOW()
+       WHERE id = $6 AND user_id = $7 RETURNING *`,
+      [
+        updates.title ?? row.title,
+        updates.markupPercent ?? row.markup_percent,
+        sellingPrice,
+        updates.status ?? row.status,
+        updates.description ?? row.description,
+        req.params.id, req.user.id
+      ]
+    );
+    res.json({ product: rowToProduct(rows[0]), message: 'המוצר עודכן בהצלחה' });
+  } catch (err) {
+    console.error('update product error:', err.message);
+    res.status(500).json({ error: 'שגיאת שרת' });
   }
-
-  db.prepare(`
-    UPDATE user_products SET
-      title = ?, markup_percent = ?, selling_price = ?, status = ?, description = ?, updated_at = datetime('now')
-    WHERE id = ? AND user_id = ?
-  `).run(
-    updates.title ?? row.title,
-    updates.markupPercent ?? row.markup_percent,
-    sellingPrice,
-    updates.status ?? row.status,
-    updates.description ?? row.description,
-    req.params.id, req.user.id
-  );
-
-  const updated = rowToProduct(db.prepare('SELECT * FROM user_products WHERE id = ?').get(req.params.id));
-  res.json({ product: updated, message: 'המוצר עודכן בהצלחה' });
 });
 
 // DELETE /api/products/:id
-router.delete('/:id', requireApproved, (req, res) => {
-  const result = db.prepare('DELETE FROM user_products WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);
-  if (result.changes === 0) return res.status(404).json({ error: 'מוצר לא נמצא' });
-  res.json({ success: true, message: 'המוצר נמחק בהצלחה' });
+router.delete('/:id', requireApproved, async (req, res) => {
+  try {
+    const { rowCount } = await pool.query('DELETE FROM user_products WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+    if (rowCount === 0) return res.status(404).json({ error: 'מוצר לא נמצא' });
+    res.json({ success: true, message: 'המוצר נמחק בהצלחה' });
+  } catch (err) {
+    console.error('delete product error:', err.message);
+    res.status(500).json({ error: 'שגיאת שרת' });
+  }
 });
 
 // POST /api/products/:id/publish
 router.post('/:id/publish', requireApproved, async (req, res) => {
-  const { stores } = req.body;
-  const row = db.prepare('SELECT * FROM user_products WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-  if (!row) return res.status(404).json({ error: 'מוצר לא נמצא' });
+  try {
+    const { stores } = req.body;
+    const { rows: existing } = await pool.query('SELECT * FROM user_products WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+    if (existing.length === 0) return res.status(404).json({ error: 'מוצר לא נמצא' });
+    const row = existing[0];
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-  const results = (stores || []).map(store => ({
-    store, success: true,
-    listingId: `listing-${store}-${Date.now()}`,
-    url: store === 'ebay' ? `https://www.ebay.com/itm/${Date.now()}` : `https://${store.replace('shopify:', '')}/products/${Date.now()}`
-  }));
+    const results = (stores || []).map(store => ({
+      store, success: true,
+      listingId: `listing-${store}-${Date.now()}`,
+      url: store === 'ebay' ? `https://www.ebay.com/itm/${Date.now()}` : `https://${store.replace('shopify:', '')}/products/${Date.now()}`
+    }));
 
-  const existing = JSON.parse(row.published_stores || '[]');
-  const merged = JSON.stringify([...new Set([...existing, ...(stores || [])])]);
+    const existingStores = JSON.parse(row.published_stores || '[]');
+    const merged = JSON.stringify([...new Set([...existingStores, ...(stores || [])])]);
 
-  db.prepare(`UPDATE user_products SET status = 'active', published_stores = ?, updated_at = datetime('now') WHERE id = ?`).run(merged, row.id);
-
-  const updated = rowToProduct(db.prepare('SELECT * FROM user_products WHERE id = ?').get(row.id));
-  res.json({ success: true, results, product: updated, message: `המוצר פורסם בהצלחה ב-${results.length} חנויות` });
+    const { rows } = await pool.query(
+      `UPDATE user_products SET status = 'active', published_stores = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+      [merged, row.id]
+    );
+    res.json({ success: true, results, product: rowToProduct(rows[0]), message: `המוצר פורסם בהצלחה ב-${results.length} חנויות` });
+  } catch (err) {
+    console.error('publish product error:', err.message);
+    res.status(500).json({ error: 'שגיאת שרת' });
+  }
 });
 
 module.exports = router;

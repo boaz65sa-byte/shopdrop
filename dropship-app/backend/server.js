@@ -1,18 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
 
 // Load global config FIRST
 require('./config');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 // Init DB (creates tables + superadmin)
 require('./db');
