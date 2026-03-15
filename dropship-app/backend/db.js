@@ -68,9 +68,9 @@ db.exec(`
 // ─── Seed superadmin ──────────────────────────────────────
 function seedSuperAdmin() {
   const cfg = global.appConfig || {};
-  const email    = cfg.superadminEmail    || process.env.SUPERADMIN_EMAIL    || 'admin@shopdrop.com';
+  const email    = cfg.superadminEmail    || process.env.SUPERADMIN_EMAIL    || 'boaz65sa@gmail.com';
   const password = cfg.superadminPassword || process.env.SUPERADMIN_PASSWORD || 'Admin123!';
-  const name     = 'Super Admin';
+  const name     = 'בועז סעדה';
 
   const existing = db.prepare('SELECT id FROM users WHERE role = ?').get('superadmin');
   if (!existing) {

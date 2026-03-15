@@ -56,8 +56,8 @@ function LoginScreen({ onLogin }) {
             {loading ? 'מתחבר...' : 'כניסה'}
           </button>
         </form>
-        <div className="mt-4 bg-warning-50 border border-warning-200 rounded-lg p-3 text-xs text-warning-800">
-          ⚠️ שנה את הסיסמה הראשונית <strong>admin123</strong> בלשונית "אבטחה"
+        <div className="mt-4 bg-primary-50 border border-primary-200 rounded-lg p-3 text-xs text-primary-800">
+          💡 סיסמת ברירת מחדל: <strong>admin123</strong> — אחרי הכניסה תוכל לשנותה בלשונית "🔒 אבטחה"
         </div>
       </div>
     </div>

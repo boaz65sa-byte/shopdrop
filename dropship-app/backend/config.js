@@ -35,7 +35,10 @@ const DEFAULTS = {
     usdToIls: 3.75,
     defaultMarkup: 50,
     shippingBuffer: 2,
-    frontendUrl: 'http://localhost:5173'
+    frontendUrl: 'http://localhost:5173',
+    businessName: 'בועז סעדה פתרונות יצירתיים',
+    businessDomain: 'bs-simple.com',
+    ownerEmail: 'boaz65sa@gmail.com'
   }
 };
 
