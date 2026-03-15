@@ -73,7 +73,7 @@ router.patch('/stores/:id/status', requireAdmin, (req, res) => {
   const store = db.prepare('SELECT * FROM store_requests WHERE id = ?').get(req.params.id);
   if (!store) return res.status(404).json({ error: 'חנות לא נמצאה' });
 
-  db.prepare('UPDATE store_requests SET status = ?, admin_notes = ?, reviewed_at = datetime("now") WHERE id = ?')
+  db.prepare("UPDATE store_requests SET status = ?, admin_notes = ?, reviewed_at = datetime('now') WHERE id = ?")
     .run(status, adminNotes || null, req.params.id);
 
   res.json({ success: true, message: `החנות ${status === 'approved' ? 'אושרה' : 'נדחתה'}` });

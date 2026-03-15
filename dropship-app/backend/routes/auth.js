@@ -51,7 +51,7 @@ router.post('/login', (req, res) => {
   if (user.status === 'rejected')
     return res.status(403).json({ error: 'בקשת ההצטרפות שלך נדחתה.', status: 'rejected' });
 
-  db.prepare('UPDATE users SET last_login = datetime("now") WHERE id = ?').run(user.id);
+  db.prepare("UPDATE users SET last_login = datetime('now') WHERE id = ?").run(user.id);
 
   const token = signToken(user);
   res.json({

@@ -10,14 +10,19 @@ export default function LoginPage({ onLogin, goRegister }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true); setError('')
-    const { ok, data } = await apiJson('/auth/login', { method: 'POST', body: { email, password } })
-    if (ok) {
-      setToken(data.token)
-      onLogin(data.user)
-    } else {
-      setError(data.error || 'שגיאה בכניסה')
+    try {
+      const { ok, data } = await apiJson('/auth/login', { method: 'POST', body: { email, password } })
+      if (ok) {
+        setToken(data.token)
+        onLogin(data.user)
+      } else {
+        setError(data.error || 'שגיאה בכניסה')
+      }
+    } catch {
+      setError('לא ניתן להתחבר לשרת – ודא שהשרת פועל')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
